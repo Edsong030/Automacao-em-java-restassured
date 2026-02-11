@@ -1,6 +1,9 @@
 # API Automation with RestAssured
 
-Projeto de automação de testes de API utilizando **Java, RestAssured, JUnit 5 e Allure Report**, seguindo boas práticas de organização em camadas e padrões utilizados no mercado.
+![Java](https://img.shields.io/badge/Java-17-blue)
+![Maven](https://img.shields.io/badge/Maven-Build-red)
+![JUnit5](https://img.shields.io/badge/JUnit-5-green)
+![CI](https://github.com/Edsong030/Automacao-em-java-restassured/actions/workflows/ci.yml/badge.svg)
 
 ---
 
