@@ -2,42 +2,23 @@ name: API Tests CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configurar Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache do Maven
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-${{ runner.os }}
-
-      - name: Rodar testes
+      - name: Build and run tests
         run: mvn clean test
-
-      - name: Gerar relatório Allure
-        if: always()
-        run: mvn allure:report
-
-      - name: Upload do relatório Allure
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: target/site/allure-maven-plugin
