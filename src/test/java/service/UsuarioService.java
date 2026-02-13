@@ -1,12 +1,18 @@
 package service;
 
-import config.BaseTest;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import model.Usuario;
 
 import static io.restassured.RestAssured.given;
 
-public class UsuarioService extends BaseTest {
+public class UsuarioService {
+
+    private RequestSpecification requestSpecification;
+
+    public UsuarioService(RequestSpecification requestSpecification) {
+        this.requestSpecification = requestSpecification;
+    }
 
     public Response listarUsuarios() {
         return given()

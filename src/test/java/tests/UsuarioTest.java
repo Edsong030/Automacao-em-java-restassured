@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.*;
 
 public class UsuarioTest extends BaseTest {
 
-    UsuarioService usuarioService = new UsuarioService();
+    UsuarioService usuarioService = new UsuarioService(requestSpecification);
 
     private String gerarEmailUnico() {
         return "usuario" + System.currentTimeMillis() + "@qa.com";
