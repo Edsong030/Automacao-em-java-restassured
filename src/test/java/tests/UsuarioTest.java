@@ -12,6 +12,10 @@ public class UsuarioTest extends BaseTest {
 
     UsuarioService usuarioService = new UsuarioService();
 
+    private String gerarEmailUnico() {
+        return "usuario" + System.currentTimeMillis() + "@qa.com";
+    }
+
     @Test
     public void deveListarUsuarios() {
         usuarioService.listarUsuarios()
@@ -24,7 +28,7 @@ public class UsuarioTest extends BaseTest {
     public void deveCadastrarUsuario() {
         Usuario usuario = new Usuario(
                 "Fulano",
-                "fulano" + System.currentTimeMillis() + "@qa.com",
+                gerarEmailUnico(),
                 "123456",
                 "true"
         );
@@ -32,7 +36,31 @@ public class UsuarioTest extends BaseTest {
         usuarioService.cadastrarUsuario(usuario)
                 .then()
                 .statusCode(201)
-                .body("message", equalTo("Cadastro realizado com sucesso"));
+                .body("message", equalTo("Cadastro realizado com sucesso"))
+                .body("_id", notNullValue());
+    }
+
+    @Test
+    public void naoDeveCadastrarUsuarioDuplicado() {
+        String email = gerarEmailUnico();
+
+        Usuario usuario = new Usuario(
+                "Fulano",
+                email,
+                "123456",
+                "true"
+        );
+
+        // Primeiro cadastro
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(201);
+
+        // Segundo cadastro com mesmo email
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Este email já está sendo usado"));
     }
 
     @Test
@@ -40,7 +68,7 @@ public class UsuarioTest extends BaseTest {
         // 1. Criar usuário
         Usuario usuario = new Usuario(
                 "Fulano",
-                "fulano" + System.currentTimeMillis() + "@qa.com",
+                gerarEmailUnico(),
                 "123456",
                 "true"
         );
@@ -51,7 +79,7 @@ public class UsuarioTest extends BaseTest {
         // 2. Editar usuário
         Usuario usuarioAtualizado = new Usuario(
                 "Fulano Editado",
-                "editado" + System.currentTimeMillis() + "@qa.com",
+                gerarEmailUnico(),
                 "123456",
                 "true"
         );
@@ -67,7 +95,7 @@ public class UsuarioTest extends BaseTest {
         // 1. Criar usuário
         Usuario usuario = new Usuario(
                 "Fulano",
-                "fulano" + System.currentTimeMillis() + "@qa.com",
+                gerarEmailUnico(),
                 "123456",
                 "true"
         );
@@ -80,5 +108,51 @@ public class UsuarioTest extends BaseTest {
                 .then()
                 .statusCode(200)
                 .body("message", equalTo("Registro excluído com sucesso"));
+    }
+
+    // =========================
+    // Testes negativos
+    // =========================
+
+    @Test
+    public void naoDeveCadastrarUsuarioSemNome() {
+        Usuario usuario = new Usuario(
+                "",
+                gerarEmailUnico(),
+                "123456",
+                "true"
+        );
+
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    public void naoDeveCadastrarUsuarioSemEmail() {
+        Usuario usuario = new Usuario(
+                "Fulano",
+                "",
+                "123456",
+                "true"
+        );
+
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    public void naoDeveCadastrarUsuarioComEmailInvalido() {
+        Usuario usuario = new Usuario(
+                "Fulano",
+                "email_invalido",
+                "123456",
+                "true"
+        );
+
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(400);
     }
 }

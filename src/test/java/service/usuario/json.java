@@ -1,4 +1,4 @@
-package resources.usuario;
+package service.usuario;
 
 public class json {
 }
