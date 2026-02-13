@@ -6,6 +6,7 @@ import model.Usuario;
 import org.junit.jupiter.api.Test;
 import service.UsuarioService;
 
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.*;
 
 public class UsuarioTest extends BaseTest {
@@ -65,7 +66,6 @@ public class UsuarioTest extends BaseTest {
 
     @Test
     public void deveEditarUsuario() {
-        // 1. Criar usuário
         Usuario usuario = new Usuario(
                 "Fulano",
                 gerarEmailUnico(),
@@ -76,7 +76,6 @@ public class UsuarioTest extends BaseTest {
         Response resposta = usuarioService.cadastrarUsuario(usuario);
         String id = resposta.jsonPath().getString("_id");
 
-        // 2. Editar usuário
         Usuario usuarioAtualizado = new Usuario(
                 "Fulano Editado",
                 gerarEmailUnico(),
@@ -92,7 +91,6 @@ public class UsuarioTest extends BaseTest {
 
     @Test
     public void deveDeletarUsuario() {
-        // 1. Criar usuário
         Usuario usuario = new Usuario(
                 "Fulano",
                 gerarEmailUnico(),
@@ -103,7 +101,6 @@ public class UsuarioTest extends BaseTest {
         Response resposta = usuarioService.cadastrarUsuario(usuario);
         String id = resposta.jsonPath().getString("_id");
 
-        // 2. Deletar usuário
         usuarioService.deletarUsuario(id)
                 .then()
                 .statusCode(200)
@@ -155,4 +152,71 @@ public class UsuarioTest extends BaseTest {
                 .then()
                 .statusCode(400);
     }
+
+    // =========================
+    // Validação de contrato
+    // =========================
+
+    @Test
+    public void deveValidarSchemaCriacaoUsuario() {
+        Usuario usuario = new Usuario(
+                "Fulano",
+                gerarEmailUnico(),
+                "123456",
+                "true"
+        );
+
+        usuarioService.cadastrarUsuario(usuario)
+                .then()
+                .statusCode(201)
+                .body(matchesJsonSchemaInClasspath("schemas/usuario-schema.json"));
+    }
+    @Test
+    public void fluxoCompletoUsuario() {
+
+        // 1. Criar usuário
+        Usuario usuario = new Usuario(
+                "Usuario Fluxo",
+                gerarEmailUnico(),
+                "123456",
+                "true"
+        );
+
+        Response respostaCriacao = usuarioService.cadastrarUsuario(usuario);
+        String id = respostaCriacao.jsonPath().getString("_id");
+
+        respostaCriacao.then()
+                .statusCode(201);
+
+        // 2. Atualizar usuário
+        Usuario usuarioAtualizado = new Usuario(
+                "Usuario Atualizado",
+                gerarEmailUnico(),
+                "123456",
+                "true"
+        );
+
+        usuarioService.editarUsuario(id, usuarioAtualizado)
+                .then()
+                .statusCode(200)
+                .body("message", equalTo("Registro alterado com sucesso"));
+
+        // 3. Buscar usuário atualizado
+        usuarioService.buscarUsuarioPorId(id)
+                .then()
+                .statusCode(200)
+                .body("nome", equalTo("Usuario Atualizado"));
+
+        // 4. Excluir usuário
+        usuarioService.deletarUsuario(id)
+                .then()
+                .statusCode(200)
+                .body("message", equalTo("Registro excluído com sucesso"));
+
+        // 5. Validar exclusão
+        usuarioService.buscarUsuarioPorId(id)
+                .then()
+                .statusCode(400);
+    }
+
 }
